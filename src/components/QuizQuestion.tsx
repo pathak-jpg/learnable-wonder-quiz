@@ -38,7 +38,7 @@ export const QuizQuestion = ({
   const [showFeedback, setShowFeedback] = useState(false);
   const [isAnswered, setIsAnswered] = useState(false);
   const [inputMode, setInputMode] = useState<'touch' | 'voice'>('touch');
-  const { speak, confirmAnswer, playAudioCue } = useAccessibility();
+  const { speak, confirmAnswer, playAudioCue, vibrate } = useAccessibility();
 
   const progress = (questionNumber / totalQuestions) * 100;
 
@@ -84,6 +84,8 @@ export const QuizQuestion = ({
         speak("Not quite right, but that's okay! Keep trying, you're doing great!", { pitch: 1.1 });
         playAudioCue({ type: 'error' });
       }
+
+      vibrate(200); // Single buzz confirmation after answer is processed
 
       onAnswer(optionIndex, isCorrect);
     }, 1000);

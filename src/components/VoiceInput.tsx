@@ -17,7 +17,7 @@ export const VoiceInput = ({
   className
 }: VoiceInputProps) => {
   const { isListening, transcript, error, startListening, stopListening, resetTranscript } = useSpeechRecognition();
-  const { speak, playAudioCue } = useAccessibility();
+  const { speak, playAudioCue, vibrate } = useAccessibility();
 
   const handleToggleListening = () => {
     if (isListening) {
@@ -36,6 +36,7 @@ export const VoiceInput = ({
       onTranscript(transcript);
       speak(`You said: ${transcript}. Great!`);
       playAudioCue({ type: 'success' });
+      vibrate(200); // Single buzz confirmation
       resetTranscript();
     }
   };

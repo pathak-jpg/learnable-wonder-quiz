@@ -11,7 +11,7 @@ interface AccessibilityPanelProps {
 }
 
 export const AccessibilityPanel = ({ className }: AccessibilityPanelProps) => {
-  const { settings, updateSettings, speak } = useAccessibility();
+  const { settings, updateSettings, speak, vibrate } = useAccessibility();
 
   const handleToggleSetting = (setting: keyof typeof settings) => {
     const newValue = !settings[setting];
@@ -143,6 +143,29 @@ export const AccessibilityPanel = ({ className }: AccessibilityPanelProps) => {
             Enable voice announcements to test audio
           </p>
         )}
+      </div>
+
+      {/* Test Haptics Button */}
+      <div className="space-y-3">
+        <Label className="text-lg font-medium">Test Haptics</Label>
+        <Button
+          onClick={() => {
+            if (!('vibrate' in navigator)) {
+              speak("Haptics may not be supported on this device or browser. iPhones using Safari do not support vibrations on the web.");
+              return;
+            }
+            vibrate([200, 100, 200]);
+            speak("If you felt a buzz, haptics are working on your device!");
+          }}
+          variant="outline"
+          className="w-full text-lg py-4"
+        >
+          <Zap className="w-5 h-5 mr-3" />
+          Test Haptic Feedback
+        </Button>
+        <p className="text-sm text-muted-foreground">
+          Note: Web haptics are supported on most Android devices in Chrome. iOS Safari does not support the Vibration API. For full haptics on iOS, a native wrapper (Capacitor) is required.
+        </p>
       </div>
     </Card>
   );
