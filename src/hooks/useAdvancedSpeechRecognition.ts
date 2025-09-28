@@ -28,9 +28,11 @@ export const useAdvancedSpeechRecognition = (): AdvancedSpeechRecognitionHook =>
       audioChunksRef.current = [];
 
       // Request microphone access
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error('Media devices not available');
+      }
       const stream = await navigator.mediaDevices.getUserMedia({ 
         audio: {
-          sampleRate: 16000, // Optimal for Whisper
           channelCount: 1,
           echoCancellation: true,
           noiseSuppression: true,
@@ -38,10 +40,19 @@ export const useAdvancedSpeechRecognition = (): AdvancedSpeechRecognitionHook =>
         } 
       });
 
+      // Determine supported mime type
+      const candidates = [
+        'audio/webm;codecs=opus',
+        'audio/webm',
+        'audio/ogg;codecs=opus',
+        'audio/mp4',
+      ];
+      const supported = (window as any).MediaRecorder?.isTypeSupported?.bind(MediaRecorder);
+      const chosen = supported ? candidates.find(t => MediaRecorder.isTypeSupported(t)) : undefined;
+
       // Create MediaRecorder
-      const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: 'audio/webm;codecs=opus' // Good compression for speech
-      });
+      const options = chosen ? { mimeType: chosen } : undefined as any;
+      const mediaRecorder = new MediaRecorder(stream, options);
 
       mediaRecorder.ondataavailable = (event) => {
         if (event.data.size > 0) {

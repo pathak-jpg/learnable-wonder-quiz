@@ -81,9 +81,10 @@ export const useHuggingFaceAI = (): HuggingFaceAIHook => {
       
       const transcriber = await initializeTranscriber();
       
-      // Convert blob to array buffer
-      const arrayBuffer = await audioBlob.arrayBuffer();
-      const result = await transcriber(arrayBuffer);
+      // Prefer passing a URL for broader codec support
+      const url = URL.createObjectURL(audioBlob);
+      const result = await transcriber(url);
+      URL.revokeObjectURL(url);
       
       return result.text?.trim() || '';
     } catch (err) {
