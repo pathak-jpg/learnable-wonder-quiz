@@ -67,10 +67,25 @@ export const useAccessibility = () => {
     }
   }, [settings.voiceEnabled]);
 
-  // Haptic feedback
+  // Haptic feedback (optimized for Android Chrome)
   const vibrate = useCallback((pattern: number | number[]) => {
-    if (navigator.vibrate) {
-      navigator.vibrate(pattern);
+    try {
+      // Check for vibration support (mainly Android Chrome)
+      if ('vibrate' in navigator && typeof navigator.vibrate === 'function') {
+        // Android Chrome specific enhancement
+        const isAndroidChrome = /Android.*Chrome/i.test(navigator.userAgent);
+        if (isAndroidChrome) {
+          // Stronger vibration patterns for Android Chrome
+          const enhancedPattern = Array.isArray(pattern) 
+            ? pattern.map(p => Math.min(p * 1.2, 400)) // Enhance but cap at 400ms
+            : Math.min(pattern * 1.2, 400);
+          navigator.vibrate(enhancedPattern);
+        } else {
+          navigator.vibrate(pattern);
+        }
+      }
+    } catch (e) {
+      // Silently handle unsupported browsers
     }
   }, []);
 
