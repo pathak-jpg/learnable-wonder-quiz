@@ -3,50 +3,59 @@ import { Button } from "@/components/ui/button";
 import { Mic, MicOff, Volume2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
+import { useAdvancedSpeechRecognition } from "@/hooks/useAdvancedSpeechRecognition";
 import { useAccessibility } from "@/hooks/useAccessibility";
 
 interface VoiceInputProps {
   onTranscript: (text: string) => void;
   placeholder?: string;
   className?: string;
+  useAdvancedSTT?: boolean; // Toggle for Hugging Face STT
 }
 
 export const VoiceInput = ({
   onTranscript,
   placeholder = "Tap to speak your answer",
-  className
+  className,
+  useAdvancedSTT = false
 }: VoiceInputProps) => {
-  const { isListening, transcript, error, startListening, stopListening, resetTranscript } = useSpeechRecognition();
+  // Use either advanced Hugging Face STT or browser STT
+  const browserSTT = useSpeechRecognition();
+  const advancedSTT = useAdvancedSpeechRecognition();
+  
+  const stt = useAdvancedSTT ? advancedSTT : browserSTT;
   const { speak, playAudioCue, vibrate } = useAccessibility();
 
   const handleToggleListening = () => {
-    if (isListening) {
-      stopListening();
+    if (stt.isListening || (useAdvancedSTT && (stt as any).isProcessing)) {
+      stt.stopListening();
       playAudioCue({ type: 'navigation' });
     } else {
-      resetTranscript();
-      startListening();
+      stt.resetTranscript();
+      stt.startListening();
       speak("I'm listening for your answer. Please speak clearly.");
       playAudioCue({ type: 'navigation' });
     }
   };
 
   const handleAcceptTranscript = () => {
-    if (transcript) {
-      onTranscript(transcript);
-      speak(`You said: ${transcript}. Great!`);
+    if (stt.transcript) {
+      onTranscript(stt.transcript);
+      speak(`You said: ${stt.transcript}. Great!`);
       playAudioCue({ type: 'success' });
       vibrate(200); // Single buzz confirmation
-      resetTranscript();
+      stt.resetTranscript();
     }
   };
 
   const handleRetryTranscript = () => {
-    resetTranscript();
-    startListening();
+    stt.resetTranscript();
+    stt.startListening();
     speak("Let's try again. Please speak your answer clearly.");
     playAudioCue({ type: 'navigation' });
   };
+
+  const isProcessing = useAdvancedSTT ? (stt as any).isProcessing : false;
 
   return (
     <div className={cn("space-y-4", className)}>
@@ -58,36 +67,44 @@ export const VoiceInput = ({
             "w-32 h-32 rounded-full text-white font-bold text-lg",
             "transition-all duration-300 transform hover:scale-105",
             "focus:ring-4 focus:ring-primary/30 focus:outline-none",
-            isListening 
+            stt.isListening || isProcessing
               ? "bg-destructive hover:bg-destructive/90 animate-pulse" 
               : "bg-primary hover:bg-primary-hover"
           )}
-          aria-label={isListening ? "Stop listening" : "Start listening"}
+          aria-label={stt.isListening ? "Stop listening" : "Start listening"}
+          disabled={isProcessing}
         >
-          {isListening ? <MicOff className="w-12 h-12" /> : <Mic className="w-12 h-12" />}
+          {isProcessing ? (
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white" />
+          ) : stt.isListening ? (
+            <MicOff className="w-12 h-12" />
+          ) : (
+            <Mic className="w-12 h-12" />
+          )}
         </Button>
       </div>
 
       <div className="text-center space-y-2">
         <p className="text-lg text-muted-foreground">
-          {isListening ? "🎤 Listening... Speak clearly!" : placeholder}
+          {isProcessing ? "🔄 Processing your speech..." : 
+           stt.isListening ? "🎤 Listening... Speak clearly!" : placeholder}
         </p>
         
-        {error && (
+        {stt.error && (
           <div className="p-3 bg-destructive-light text-destructive rounded-lg">
-            <p className="text-sm font-medium">Oops! {error}</p>
+            <p className="text-sm font-medium">Oops! {stt.error}</p>
             <p className="text-xs mt-1">Try speaking louder and clearer.</p>
           </div>
         )}
 
-        {transcript && (
+        {stt.transcript && (
           <div className="p-4 bg-card border-2 border-primary rounded-lg space-y-3">
             <div className="flex items-center gap-2 text-primary">
               <Volume2 className="w-4 h-4" />
               <span className="text-sm font-medium">You said:</span>
             </div>
             <p className="text-lg font-medium text-card-foreground">
-              "{transcript}"
+              "{stt.transcript}"
             </p>
             
             <div className="flex gap-3 justify-center">

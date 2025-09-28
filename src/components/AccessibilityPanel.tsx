@@ -22,7 +22,8 @@ export const AccessibilityPanel = ({ className }: AccessibilityPanelProps) => {
       highContrast: "High contrast mode",
       largeText: "Large text mode", 
       reduceMotion: "Reduce motion mode",
-      voiceEnabled: "Voice announcements"
+      voiceEnabled: "Voice announcements",
+      advancedSTT: "Advanced speech recognition"
     };
     
     const status = newValue ? "enabled" : "disabled";
@@ -119,6 +120,24 @@ export const AccessibilityPanel = ({ className }: AccessibilityPanelProps) => {
             id="voice-enabled"
             checked={settings.voiceEnabled}
             onCheckedChange={() => handleToggleSetting('voiceEnabled')}
+            className="data-[state=checked]:bg-primary"
+          />
+        </div>
+        {/* Advanced STT */}
+        <div className="flex items-center justify-between space-x-4">
+          <div className="flex-1">
+            <Label htmlFor="advanced-stt" className="text-lg font-medium flex items-center gap-2">
+              <Volume2 className="w-4 h-4" />
+              Advanced Speech Recognition
+            </Label>
+            <p className="text-sm text-muted-foreground mt-1">
+              Use AI-powered speech recognition for better accuracy (requires internet)
+            </p>
+          </div>
+          <Switch
+            id="advanced-stt"
+            checked={settings.advancedSTT}
+            onCheckedChange={() => handleToggleSetting('advancedSTT')}
             className="data-[state=checked]:bg-primary"
           />
         </div>

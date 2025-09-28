@@ -5,6 +5,7 @@ interface AccessibilitySettings {
   largeText: boolean;
   reduceMotion: boolean;
   voiceEnabled: boolean;
+  advancedSTT: boolean; // Use Hugging Face Whisper instead of browser STT
 }
 
 interface AudioCue {
@@ -18,6 +19,7 @@ export const useAccessibility = () => {
     largeText: true, // Default to large text for accessibility
     reduceMotion: false,
     voiceEnabled: true,
+    advancedSTT: true, // Default to advanced STT for better accuracy
   });
 
   // Text-to-Speech functionality (more robust across mobile browsers)
