@@ -20,30 +20,51 @@ export const useAccessibility = () => {
     voiceEnabled: true,
   });
 
-  // Text-to-Speech functionality
+  // Text-to-Speech functionality (more robust across mobile browsers)
   const speak = useCallback((text: string, options?: { rate?: number; pitch?: number }) => {
-    if (!settings.voiceEnabled || !window.speechSynthesis) return;
+    try {
+      if (!settings.voiceEnabled || typeof window === 'undefined' || !('speechSynthesis' in window)) return;
 
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    
-    // Child-friendly voice settings
-    utterance.rate = options?.rate ?? 0.8; // Slower for better comprehension
-    utterance.pitch = options?.pitch ?? 1.2; // Higher pitch, more friendly
-    utterance.volume = 1;
-    
-    // Try to use a child-friendly voice
-    const voices = window.speechSynthesis.getVoices();
-    const childVoice = voices.find(voice => 
-      voice.name.includes('female') || 
-      voice.name.includes('child') ||
-      voice.lang.includes('en-US')
-    );
-    if (childVoice) {
-      utterance.voice = childVoice;
+      const synth = window.speechSynthesis;
+
+      // iOS/Safari resume hack
+      if (synth.paused) synth.resume();
+      setTimeout(() => { try { synth.resume(); } catch {} }, 0);
+
+      synth.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+
+      // Child-friendly voice settings
+      utterance.rate = options?.rate ?? 0.8; // Slower for better comprehension
+      utterance.pitch = options?.pitch ?? 1.2; // Higher pitch, more friendly
+      utterance.volume = 1;
+
+      const assignVoiceAndSpeak = () => {
+        try {
+          const voices = synth.getVoices();
+          const childVoice = voices.find(v =>
+            v && (v.name.toLowerCase().includes('female') || v.name.toLowerCase().includes('child') || v.lang.includes('en-US'))
+          );
+          if (childVoice) utterance.voice = childVoice;
+        } catch {}
+        synth.speak(utterance);
+      };
+
+      // If voices not loaded yet, wait for them
+      if (synth.getVoices().length === 0) {
+        const handle = () => {
+          assignVoiceAndSpeak();
+          synth.removeEventListener?.('voiceschanged', handle as any);
+        };
+        synth.addEventListener?.('voiceschanged', handle as any);
+        // Fallback timeout
+        setTimeout(assignVoiceAndSpeak, 250);
+      } else {
+        assignVoiceAndSpeak();
+      }
+    } catch (e) {
+      // Swallow errors to avoid crashes on unsupported devices
     }
-
-    window.speechSynthesis.speak(utterance);
   }, [settings.voiceEnabled]);
 
   // Haptic feedback
@@ -53,40 +74,48 @@ export const useAccessibility = () => {
     }
   }, []);
 
-  // Audio cues for different actions
+  // Audio cues for different actions (guarded for mobile browsers)
   const playAudioCue = useCallback((cue: AudioCue) => {
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
+    try {
+      const AudioCtx = (window.AudioContext || (window as any).webkitAudioContext);
+      if (!AudioCtx) return;
 
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
+      const audioContext = new AudioCtx();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
 
-    // Different sounds for different cues
-    switch (cue.type) {
-      case 'success':
-        oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime); // C5
-        oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.1); // E5
-        oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime + 0.2); // G5
-        break;
-      case 'error':
-        oscillator.frequency.setValueAtTime(220, audioContext.currentTime); // A3
-        oscillator.frequency.setValueAtTime(196, audioContext.currentTime + 0.15); // G3
-        break;
-      case 'selection':
-        oscillator.frequency.setValueAtTime(440, audioContext.currentTime); // A4 - neutral beep
-        break;
-      case 'navigation':
-        oscillator.frequency.setValueAtTime(330, audioContext.currentTime); // E4 - soft navigation sound
-        break;
-    }
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
 
-    oscillator.type = 'sine';
-    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+      // Different sounds for different cues
+      switch (cue.type) {
+        case 'success':
+          oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime); // C5
+          oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.1); // E5
+          oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime + 0.2); // G5
+          break;
+        case 'error':
+          oscillator.frequency.setValueAtTime(220, audioContext.currentTime); // A3
+          oscillator.frequency.setValueAtTime(196, audioContext.currentTime + 0.15); // G3
+          break;
+        case 'selection':
+          oscillator.frequency.setValueAtTime(440, audioContext.currentTime); // A4 - neutral beep
+          break;
+        case 'navigation':
+          oscillator.frequency.setValueAtTime(330, audioContext.currentTime); // E4 - soft navigation sound
+          break;
+      }
 
-    oscillator.start(audioContext.currentTime);
-    oscillator.stop(audioContext.currentTime + 0.3);
+      oscillator.type = 'sine';
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+
+      // Some browsers start audio contexts suspended
+      audioContext.resume?.();
+
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.3);
+    } catch {}
   }, []);
 
   // Confirm answer with haptic feedback

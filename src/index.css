@@ -146,6 +146,12 @@
   body {
     @apply bg-background text-foreground font-sans antialiased;
     font-size: 18px; /* Larger base font for accessibility */
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
   }
 
   /* Focus indicators for accessibility */
@@ -160,6 +166,13 @@
 
   .extra-large-text {
     font-size: 1.5em;
+  }
+
+  /* Reduce motion preference */
+  .reduce-motion * {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
   }
 }
 
