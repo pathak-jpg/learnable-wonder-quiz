@@ -101,7 +101,6 @@ export const QuizInterface = ({ selectedGrade = 1, onComplete }: QuizInterfacePr
   return (
     <div className="w-full space-y-6">
       <QuizQuestion
-        key={currentQuestion.id} // Force component remount for fresh state
         question={currentQuestion}
         questionNumber={currentQuestionIndex + 1}
         totalQuestions={questions.length}

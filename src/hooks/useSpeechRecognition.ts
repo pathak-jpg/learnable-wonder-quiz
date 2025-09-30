@@ -60,17 +60,16 @@ export const useSpeechRecognition = (): SpeechRecognitionHook => {
 
   const startListening = useCallback(() => {
     if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-      setError('Speech recognition not supported in this browser. Try using Chrome on Android for best results.');
+      setError('Speech recognition not supported in this browser');
       return;
     }
 
-    try {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      const recognition = new SpeechRecognition();
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
 
-      recognition.continuous = false;
-      recognition.interimResults = false;
-      recognition.lang = 'en-US';
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = 'en-US';
     
     recognition.onstart = () => {
       setIsListening(true);
@@ -91,12 +90,8 @@ export const useSpeechRecognition = (): SpeechRecognitionHook => {
       setIsListening(false);
     };
 
-      recognitionRef.current = recognition;
-      recognition.start();
-    } catch (error) {
-      setError('Failed to start speech recognition. Please try again.');
-      setIsListening(false);
-    }
+    recognitionRef.current = recognition;
+    recognition.start();
   }, []);
 
   const stopListening = useCallback(() => {

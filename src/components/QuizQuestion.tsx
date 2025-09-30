@@ -38,7 +38,7 @@ export const QuizQuestion = ({
   const [showFeedback, setShowFeedback] = useState(false);
   const [isAnswered, setIsAnswered] = useState(false);
   const [inputMode, setInputMode] = useState<'touch' | 'voice'>('touch');
-  const { speak, confirmAnswer, playAudioCue, vibrate, settings } = useAccessibility();
+  const { speak, confirmAnswer, playAudioCue, vibrate } = useAccessibility();
 
   const progress = (questionNumber / totalQuestions) * 100;
 
@@ -217,7 +217,6 @@ export const QuizQuestion = ({
             <VoiceInput
               onTranscript={handleVoiceAnswer}
               placeholder="🎤 Tap the microphone and say your answer"
-              useAdvancedSTT={settings.advancedSTT} // Use user's preference
             />
           )}
 

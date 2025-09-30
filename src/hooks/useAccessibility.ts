@@ -5,7 +5,6 @@ interface AccessibilitySettings {
   largeText: boolean;
   reduceMotion: boolean;
   voiceEnabled: boolean;
-  advancedSTT: boolean; // Use Hugging Face Whisper instead of browser STT
 }
 
 interface AudioCue {
@@ -19,7 +18,6 @@ export const useAccessibility = () => {
     largeText: true, // Default to large text for accessibility
     reduceMotion: false,
     voiceEnabled: true,
-    advancedSTT: true, // Default to advanced STT for better accuracy
   });
 
   // Text-to-Speech functionality (more robust across mobile browsers)
@@ -69,25 +67,10 @@ export const useAccessibility = () => {
     }
   }, [settings.voiceEnabled]);
 
-  // Haptic feedback (optimized for Android Chrome)
+  // Haptic feedback
   const vibrate = useCallback((pattern: number | number[]) => {
-    try {
-      // Check for vibration support (mainly Android Chrome)
-      if ('vibrate' in navigator && typeof navigator.vibrate === 'function') {
-        // Android Chrome specific enhancement
-        const isAndroidChrome = /Android.*Chrome/i.test(navigator.userAgent);
-        if (isAndroidChrome) {
-          // Stronger vibration patterns for Android Chrome
-          const enhancedPattern = Array.isArray(pattern) 
-            ? pattern.map(p => Math.min(p * 1.2, 400)) // Enhance but cap at 400ms
-            : Math.min(pattern * 1.2, 400);
-          navigator.vibrate(enhancedPattern);
-        } else {
-          navigator.vibrate(pattern);
-        }
-      }
-    } catch (e) {
-      // Silently handle unsupported browsers
+    if (navigator.vibrate) {
+      navigator.vibrate(pattern);
     }
   }, []);
 
