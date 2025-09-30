@@ -47,6 +47,7 @@ export const QuizQuestion = ({
     setSelectedAnswer(null);
     setShowFeedback(false);
     setIsAnswered(false);
+    setInputMode('touch');
   }, [question.id]);
 
   useEffect(() => {
