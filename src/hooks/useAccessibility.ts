@@ -118,17 +118,54 @@ export const useAccessibility = () => {
     } catch {}
   }, []);
 
-  // Confirm answer with haptic feedback
-  const confirmAnswer = useCallback((optionIndex: number) => {
-    const vibrationPattern = Array(optionIndex + 1).fill(200).reduce((acc, curr, idx) => {
-      acc.push(curr);
-      if (idx < optionIndex) acc.push(100); // Add pause between vibrations
-      return acc;
-    }, [] as number[]);
+  // Play unique haptic and sound for each option (optimized for Android Chrome)
+  const playOptionSound = useCallback((optionIndex: number) => {
+    // Distinct haptic patterns for each option (A=1 buzz, B=2 buzzes, C=3 buzzes, D=4 buzzes)
+    const hapticPatterns = [
+      [100],                    // Option A: single short buzz
+      [100, 80, 100],          // Option B: double buzz
+      [100, 80, 100, 80, 100], // Option C: triple buzz
+      [80, 60, 80, 60, 80, 60, 80], // Option D: quadruple buzz
+    ];
     
-    vibrate(vibrationPattern);
-    playAudioCue({ type: 'selection' });
-  }, [vibrate, playAudioCue]);
+    const pattern = hapticPatterns[optionIndex] || [100];
+    vibrate(pattern);
+
+    // Play distinct audio tones for each option
+    try {
+      const AudioCtx = (window.AudioContext || (window as any).webkitAudioContext);
+      if (!AudioCtx) return;
+
+      const audioContext = new AudioCtx();
+      audioContext.resume?.();
+
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+
+      // Different frequencies for each option
+      const frequencies = [
+        349.23, // Option A: F4
+        392.00, // Option B: G4
+        440.00, // Option C: A4
+        493.88, // Option D: B4
+      ];
+
+      oscillator.frequency.setValueAtTime(
+        frequencies[optionIndex] || 440,
+        audioContext.currentTime
+      );
+
+      oscillator.type = 'sine';
+      gainNode.gain.setValueAtTime(0.4, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.2);
+    } catch {}
+  }, [vibrate]);
 
   // Update accessibility settings
   const updateSettings = useCallback((newSettings: Partial<AccessibilitySettings>) => {
@@ -164,6 +201,6 @@ export const useAccessibility = () => {
     speak,
     vibrate,
     playAudioCue,
-    confirmAnswer,
+    playOptionSound,
   };
 };

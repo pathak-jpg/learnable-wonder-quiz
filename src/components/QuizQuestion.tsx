@@ -38,9 +38,16 @@ export const QuizQuestion = ({
   const [showFeedback, setShowFeedback] = useState(false);
   const [isAnswered, setIsAnswered] = useState(false);
   const [inputMode, setInputMode] = useState<'touch' | 'voice'>('touch');
-  const { speak, confirmAnswer, playAudioCue, vibrate } = useAccessibility();
+  const { speak, playOptionSound, playAudioCue, vibrate } = useAccessibility();
 
   const progress = (questionNumber / totalQuestions) * 100;
+
+  // Reset state when question changes
+  useEffect(() => {
+    setSelectedAnswer(null);
+    setShowFeedback(false);
+    setIsAnswered(false);
+  }, [question.id]);
 
   useEffect(() => {
     // Announce the question when component mounts
@@ -67,8 +74,8 @@ export const QuizQuestion = ({
     setSelectedAnswer(optionIndex);
     const optionLetter = String.fromCharCode(65 + optionIndex);
     
-    // Confirm selection with haptic feedback
-    confirmAnswer(optionIndex);
+    // Play unique haptic and sound for each option
+    playOptionSound(optionIndex);
     speak(`You selected option ${optionLetter}: ${question.options[optionIndex]}`);
 
     // Show confirmation and process answer
