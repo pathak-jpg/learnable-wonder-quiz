@@ -25,7 +25,7 @@ export const useHuggingFaceAI = (): HuggingFaceAIHook => {
       setIsLoading(true);
       const transcriber = await pipeline(
         'automatic-speech-recognition',
-        'onnx-community/whisper-tiny.en',
+        'onnx-community/whisper-base.en',
         { 
           device: 'webgpu',
           // Fallback to CPU if WebGPU not available
@@ -39,7 +39,7 @@ export const useHuggingFaceAI = (): HuggingFaceAIHook => {
       try {
         const transcriber = await pipeline(
           'automatic-speech-recognition',
-          'onnx-community/whisper-tiny.en',
+          'onnx-community/whisper-base.en',
           { device: 'cpu' }
         );
         transcriberRef.current = transcriber;
@@ -83,9 +83,15 @@ export const useHuggingFaceAI = (): HuggingFaceAIHook => {
       
       // Prefer passing a URL for broader codec support
       const url = URL.createObjectURL(audioBlob);
-      const result = await transcriber(url);
+      const result = await transcriber(url, {
+        language: 'english',
+        task: 'transcribe',
+        chunk_length_s: 30,
+        stride_length_s: 5,
+      });
       URL.revokeObjectURL(url);
       
+      console.log('Transcription result:', result);
       return result.text?.trim() || '';
     } catch (err) {
       const errorMsg = 'Speech recognition failed. Please try speaking more clearly.';
