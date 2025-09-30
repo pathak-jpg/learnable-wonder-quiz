@@ -12,6 +12,20 @@ interface AudioCue {
   sound?: string;
 }
 
+// Shared Web Audio context to ensure audio works reliably on mobile
+let sharedAudioCtx: AudioContext | null = null;
+const getAudioCtx = () => {
+  try {
+    const AudioCtx = (window.AudioContext || (window as any).webkitAudioContext);
+    if (!AudioCtx) return null;
+    if (!sharedAudioCtx) sharedAudioCtx = new AudioCtx();
+    sharedAudioCtx.resume?.();
+    return sharedAudioCtx;
+  } catch {
+    return null;
+  }
+};
+
 export const useAccessibility = () => {
   const [settings, setSettings] = useState<AccessibilitySettings>({
     highContrast: false,
@@ -77,10 +91,9 @@ export const useAccessibility = () => {
   // Audio cues for different actions (guarded for mobile browsers)
   const playAudioCue = useCallback((cue: AudioCue) => {
     try {
-      const AudioCtx = (window.AudioContext || (window as any).webkitAudioContext);
-      if (!AudioCtx) return;
+      const audioContext = getAudioCtx();
+      if (!audioContext) return;
 
-      const audioContext = new AudioCtx();
       const oscillator = audioContext.createOscillator();
       const gainNode = audioContext.createGain();
 
@@ -91,12 +104,12 @@ export const useAccessibility = () => {
       switch (cue.type) {
         case 'success':
           oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime); // C5
-          oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.1); // E5
-          oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime + 0.2); // G5
+          setTimeout(() => oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.05), 0);
+          setTimeout(() => oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime + 0.1), 0);
           break;
         case 'error':
           oscillator.frequency.setValueAtTime(220, audioContext.currentTime); // A3
-          oscillator.frequency.setValueAtTime(196, audioContext.currentTime + 0.15); // G3
+          setTimeout(() => oscillator.frequency.setValueAtTime(196, audioContext.currentTime + 0.08), 0);
           break;
         case 'selection':
           oscillator.frequency.setValueAtTime(440, audioContext.currentTime); // A4 - neutral beep
@@ -107,14 +120,11 @@ export const useAccessibility = () => {
       }
 
       oscillator.type = 'sine';
-      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+      gainNode.gain.setValueAtTime(0.25, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.25);
 
-      // Some browsers start audio contexts suspended
-      audioContext.resume?.();
-
-      oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 0.3);
+      oscillator.start();
+      oscillator.stop(audioContext.currentTime + 0.25);
     } catch {}
   }, []);
 
@@ -133,11 +143,8 @@ export const useAccessibility = () => {
 
     // Play distinct audio tones for each option
     try {
-      const AudioCtx = (window.AudioContext || (window as any).webkitAudioContext);
-      if (!AudioCtx) return;
-
-      const audioContext = new AudioCtx();
-      audioContext.resume?.();
+      const audioContext = getAudioCtx();
+      if (!audioContext) return;
 
       const oscillator = audioContext.createOscillator();
       const gainNode = audioContext.createGain();
@@ -148,8 +155,8 @@ export const useAccessibility = () => {
       // Different frequencies for each option
       const frequencies = [
         349.23, // Option A: F4
-        392.00, // Option B: G4
-        440.00, // Option C: A4
+        392.0,  // Option B: G4
+        440.0,  // Option C: A4
         493.88, // Option D: B4
       ];
 
@@ -159,11 +166,11 @@ export const useAccessibility = () => {
       );
 
       oscillator.type = 'sine';
-      gainNode.gain.setValueAtTime(0.4, audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+      gainNode.gain.setValueAtTime(0.35, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.18);
 
-      oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 0.2);
+      oscillator.start();
+      oscillator.stop(audioContext.currentTime + 0.18);
     } catch {}
   }, [vibrate]);
 
