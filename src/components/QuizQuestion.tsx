@@ -110,9 +110,18 @@ export const QuizQuestion = ({
     
     // Check if voice answer matches any option or correct answer
     if (question.type === "multiple-choice") {
-      const correctOption = question.options[question.correctAnswer].toLowerCase();
-      isCorrect = correctOption.includes(normalizedTranscript) || 
-                  normalizedTranscript.includes(correctOption);
+      // Check if user said an option letter (e.g., "option c", "c", "see")
+      const optionLetterMatch = normalizedTranscript.match(/option\s*([a-d])|^([a-d])$|^([a-d])\s/i);
+      if (optionLetterMatch) {
+        const spokenLetter = (optionLetterMatch[1] || optionLetterMatch[2] || optionLetterMatch[3]).toLowerCase();
+        const spokenIndex = spokenLetter.charCodeAt(0) - 97; // Convert 'a' to 0, 'b' to 1, etc.
+        isCorrect = spokenIndex === question.correctAnswer;
+      } else {
+        // Fallback: Check if the answer text matches
+        const correctOption = question.options[question.correctAnswer].toLowerCase();
+        isCorrect = correctOption.includes(normalizedTranscript) || 
+                    normalizedTranscript.includes(correctOption);
+      }
     }
     
     setShowFeedback(true);
