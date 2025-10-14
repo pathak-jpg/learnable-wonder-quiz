@@ -5,6 +5,7 @@ interface AccessibilitySettings {
   largeText: boolean;
   reduceMotion: boolean;
   voiceEnabled: boolean;
+  brailleEnabled: boolean;
 }
 
 interface AudioCue {
@@ -32,6 +33,7 @@ export const useAccessibility = () => {
     largeText: true, // Default to large text for accessibility
     reduceMotion: false,
     voiceEnabled: true,
+    brailleEnabled: false,
   });
 
   // Text-to-Speech functionality (more robust across mobile browsers)
@@ -199,6 +201,12 @@ export const useAccessibility = () => {
       classList.add('reduce-motion');
     } else {
       classList.remove('reduce-motion');
+    }
+
+    if (settings.brailleEnabled) {
+      classList.add('braille-enabled');
+    } else {
+      classList.remove('braille-enabled');
     }
   }, [settings]);
 

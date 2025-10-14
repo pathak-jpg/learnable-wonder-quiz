@@ -22,7 +22,8 @@ export const AccessibilityPanel = ({ className }: AccessibilityPanelProps) => {
       highContrast: "High contrast mode",
       largeText: "Large text mode", 
       reduceMotion: "Reduce motion mode",
-      voiceEnabled: "Voice announcements"
+      voiceEnabled: "Voice announcements",
+      brailleEnabled: "Refreshable braille display"
     };
     
     const status = newValue ? "enabled" : "disabled";
@@ -119,6 +120,25 @@ export const AccessibilityPanel = ({ className }: AccessibilityPanelProps) => {
             id="voice-enabled"
             checked={settings.voiceEnabled}
             onCheckedChange={() => handleToggleSetting('voiceEnabled')}
+            className="data-[state=checked]:bg-primary"
+          />
+        </div>
+
+        {/* Braille Display */}
+        <div className="flex items-center justify-between space-x-4">
+          <div className="flex-1">
+            <Label htmlFor="braille-enabled" className="text-lg font-medium flex items-center gap-2">
+              <Eye className="w-4 h-4" />
+              Refreshable Braille Display
+            </Label>
+            <p className="text-sm text-muted-foreground mt-1">
+              Enable support for refreshable braille displays
+            </p>
+          </div>
+          <Switch
+            id="braille-enabled"
+            checked={settings.brailleEnabled}
+            onCheckedChange={() => handleToggleSetting('brailleEnabled')}
             className="data-[state=checked]:bg-primary"
           />
         </div>
