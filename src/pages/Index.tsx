@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
-import { GraduationCap, Heart, Users, Award } from "lucide-react";
+import { GraduationCap, Heart, Users, Award, Eye } from "lucide-react";
 import heroIllustration from "@/assets/hero-illustration.png";
 import mascotOwl from "@/assets/mascot-owl.png";
 
@@ -80,7 +80,7 @@ const Index = () => {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-8">
             <Card className="p-8 text-center space-y-6 hover:shadow-lg transition-shadow">
               <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
                 <span className="text-4xl">🎵</span>
@@ -118,6 +118,16 @@ const Index = () => {
               <h3 className="text-2xl font-bold text-foreground">Adaptive</h3>
               <p className="text-muted-foreground leading-relaxed">
                 High contrast visuals, large fonts, and haptic feedback for different accessibility needs
+              </p>
+            </Card>
+
+            <Card className="p-8 text-center space-y-6 hover:shadow-lg transition-shadow">
+              <div className="w-16 h-16 bg-secondary/10 rounded-full flex items-center justify-center mx-auto">
+                <Eye className="w-8 h-8 text-secondary" />
+              </div>
+              <h3 className="text-2xl font-bold text-foreground">Braille Support</h3>
+              <p className="text-muted-foreground leading-relaxed">
+                Compatible with refreshable braille displays for tactile learning experience
               </p>
             </Card>
           </div>
