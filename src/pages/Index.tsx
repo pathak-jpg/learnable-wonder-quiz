@@ -27,7 +27,6 @@ const Index = () => {
               <h1 className="text-5xl md:text-7xl font-bold">
                 <span className="text-primary">Learn</span>
                 <span className="text-accent">Able</span>
-                <span className="text-secondary"> VIS</span>
               </h1>
             </div>
             
@@ -73,7 +72,7 @@ const Index = () => {
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
-              Why Children Love LearnAble VIS
+              Why Children Love LearnAble
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
               Every feature is carefully designed to support different learning needs and abilities
@@ -142,7 +141,7 @@ const Index = () => {
               Powered by Advanced AI
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-              LearnAble VIS uses cutting-edge artificial intelligence to create a truly accessible learning experience
+              LearnAble uses cutting-edge artificial intelligence to create a truly accessible learning experience
             </p>
           </div>
 

@@ -69,7 +69,7 @@ export const TeacherDashboard = () => {
           <div>
             <h1 className="text-4xl font-bold text-foreground">Teacher Dashboard</h1>
             <p className="text-xl text-muted-foreground mt-2">
-              LearnAble VIS Analytics & Student Progress
+              LearnAble Analytics & Student Progress
             </p>
           </div>
           <Button onClick={handleExportData} variant="outline" size="lg">

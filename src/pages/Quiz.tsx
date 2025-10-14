@@ -132,7 +132,7 @@ const Quiz = () => {
                     className="w-16 h-16"
                   />
                   <h1 className="text-4xl md:text-5xl font-bold text-foreground">
-                    LearnAble VIS
+                    LearnAble
                   </h1>
                 </div>
                 
