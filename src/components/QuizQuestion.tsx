@@ -53,19 +53,23 @@ export const QuizQuestion = ({
   useEffect(() => {
     // Announce the question when component mounts
     const announcement = `Question ${questionNumber} of ${totalQuestions}. ${question.question}`;
-    speak(announcement, { rate: 0.7 });
+    speak(announcement, { rate: 0.6 });
     
     // If multiple choice, announce options
     if (question.type === "multiple-choice") {
+      // Wait for question to finish, then announce options intro
       setTimeout(() => {
-        speak("Here are your options:", { rate: 0.8 });
+        speak("Here are your options. Listen carefully.", { rate: 0.6 });
+        
+        // Announce each option with sufficient delay
         question.options.forEach((option, index) => {
+          // Increase delay to 2500ms per option to ensure each is fully heard
           setTimeout(() => {
             const optionLetter = String.fromCharCode(65 + index); // A, B, C, D
-            speak(`Option ${optionLetter}: ${option}`, { rate: 0.8 });
-          }, (index + 1) * 1500);
+            speak(`Option ${optionLetter}: ${option}`, { rate: 0.6 });
+          }, (index + 1) * 2500);
         });
-      }, 2000);
+      }, 3000);
     }
   }, [question, questionNumber, totalQuestions, speak]);
 
