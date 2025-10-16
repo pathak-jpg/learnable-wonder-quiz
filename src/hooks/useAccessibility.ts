@@ -143,36 +143,48 @@ export const useAccessibility = () => {
     const pattern = hapticPatterns[optionIndex] || [100];
     vibrate(pattern);
 
-    // Play distinct audio tones for each option
+    // Play distinct, vibrant audio tones for each option
     try {
       const audioContext = getAudioCtx();
       if (!audioContext) return;
 
       const oscillator = audioContext.createOscillator();
       const gainNode = audioContext.createGain();
+      const filterNode = audioContext.createBiquadFilter();
 
-      oscillator.connect(gainNode);
+      oscillator.connect(filterNode);
+      filterNode.connect(gainNode);
       gainNode.connect(audioContext.destination);
 
-      // Different frequencies for each option
-      const frequencies = [
-        349.23, // Option A: F4
-        392.0,  // Option B: G4
-        440.0,  // Option C: A4
-        493.88, // Option D: B4
+      // Vibrant, distinct frequencies and patterns for each option
+      const soundConfig = [
+        { baseFreq: 523.25, endFreq: 659.25, type: 'triangle' as OscillatorType }, // Option A: C5 to E5 (rising)
+        { baseFreq: 659.25, endFreq: 523.25, type: 'square' as OscillatorType },   // Option B: E5 to C5 (falling)
+        { baseFreq: 440.0, endFreq: 554.37, type: 'triangle' as OscillatorType },  // Option C: A4 to C#5 (rising)
+        { baseFreq: 587.33, endFreq: 493.88, type: 'square' as OscillatorType },   // Option D: D5 to B4 (falling)
       ];
 
-      oscillator.frequency.setValueAtTime(
-        frequencies[optionIndex] || 440,
-        audioContext.currentTime
-      );
+      const config = soundConfig[optionIndex] || soundConfig[0];
 
-      oscillator.type = 'sine';
-      gainNode.gain.setValueAtTime(0.35, audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.18);
+      // Set waveform type for variety
+      oscillator.type = config.type;
 
-      oscillator.start();
-      oscillator.stop(audioContext.currentTime + 0.18);
+      // Add frequency sweep for more interesting sound
+      oscillator.frequency.setValueAtTime(config.baseFreq, audioContext.currentTime);
+      oscillator.frequency.exponentialRampToValueAtTime(config.endFreq, audioContext.currentTime + 0.15);
+
+      // Lowpass filter for smoother, warmer sound
+      filterNode.type = 'lowpass';
+      filterNode.frequency.setValueAtTime(2000, audioContext.currentTime);
+      filterNode.Q.setValueAtTime(1, audioContext.currentTime);
+
+      // Louder, clearer volume envelope
+      gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+      gainNode.gain.linearRampToValueAtTime(0.6, audioContext.currentTime + 0.02);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.3);
+
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.3);
     } catch {}
   }, [vibrate]);
 
