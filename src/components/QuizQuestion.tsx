@@ -104,23 +104,61 @@ export const QuizQuestion = ({
 
     setIsAnswered(true);
     
-    // Simple answer matching - could be enhanced with AI/NLP
     const normalizedTranscript = transcript.toLowerCase().trim();
     let isCorrect = false;
+    let matchedIndex = -1;
     
     // Check if voice answer matches any option or correct answer
     if (question.type === "multiple-choice") {
-      // Check if user said an option letter (e.g., "option c", "c", "see")
-      const optionLetterMatch = normalizedTranscript.match(/option\s*([a-d])|^([a-d])$|^([a-d])\s/i);
-      if (optionLetterMatch) {
-        const spokenLetter = (optionLetterMatch[1] || optionLetterMatch[2] || optionLetterMatch[3]).toLowerCase();
-        const spokenIndex = spokenLetter.charCodeAt(0) - 97; // Convert 'a' to 0, 'b' to 1, etc.
-        isCorrect = spokenIndex === question.correctAnswer;
+      // Map of homophones and variations for option letters
+      const optionPatterns = [
+        ['a', 'ay', 'aye', 'eh'], // Option A
+        ['b', 'be', 'bee', 'bea'], // Option B
+        ['c', 'see', 'sea', 'si'], // Option C
+        ['d', 'dee', 'di', 'de']  // Option D
+      ];
+      
+      // Try to match option letter with homophones
+      for (let i = 0; i < optionPatterns.length; i++) {
+        const patterns = optionPatterns[i];
+        const optionLetter = String.fromCharCode(97 + i); // a, b, c, d
+        
+        // Check for "option X" or just "X" patterns
+        for (const pattern of patterns) {
+          const regex1 = new RegExp(`\\boption\\s*${pattern}\\b`, 'i');
+          const regex2 = new RegExp(`^${pattern}$`, 'i');
+          const regex3 = new RegExp(`^${pattern}\\b`, 'i');
+          const regex4 = new RegExp(`\\b${pattern}$`, 'i');
+          
+          if (regex1.test(normalizedTranscript) || 
+              regex2.test(normalizedTranscript) || 
+              regex3.test(normalizedTranscript) ||
+              regex4.test(normalizedTranscript)) {
+            matchedIndex = i;
+            break;
+          }
+        }
+        
+        if (matchedIndex !== -1) break;
+      }
+      
+      // If we matched an option letter, check if it's correct
+      if (matchedIndex !== -1) {
+        isCorrect = matchedIndex === question.correctAnswer;
+        setSelectedAnswer(matchedIndex);
       } else {
-        // Fallback: Check if the answer text matches
-        const correctOption = question.options[question.correctAnswer].toLowerCase();
-        isCorrect = correctOption.includes(normalizedTranscript) || 
-                    normalizedTranscript.includes(correctOption);
+        // Fallback: Try to match the full answer text
+        for (let i = 0; i < question.options.length; i++) {
+          const option = question.options[i].toLowerCase();
+          if (option.includes(normalizedTranscript) || 
+              normalizedTranscript.includes(option) ||
+              normalizedTranscript.replace(/[^\w\s]/g, '').includes(option.replace(/[^\w\s]/g, ''))) {
+            matchedIndex = i;
+            isCorrect = i === question.correctAnswer;
+            setSelectedAnswer(i);
+            break;
+          }
+        }
       }
     }
     
