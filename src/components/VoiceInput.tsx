@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Mic, MicOff, Volume2 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -9,15 +9,27 @@ interface VoiceInputProps {
   onTranscript: (text: string) => void;
   placeholder?: string;
   className?: string;
+  autoStart?: boolean;
 }
 
 export const VoiceInput = ({
   onTranscript,
   placeholder = "Tap to speak your answer",
-  className
+  className,
+  autoStart = false
 }: VoiceInputProps) => {
   const { isListening, transcript, error, startListening, stopListening, resetTranscript } = useSpeechRecognition();
   const { speak, playAudioCue, vibrate } = useAccessibility();
+
+  // Auto-start listening when component mounts if autoStart is true
+  useEffect(() => {
+    if (autoStart && !isListening) {
+      resetTranscript();
+      startListening();
+      speak("I'm listening for your answer. Please speak clearly.");
+      playAudioCue({ type: 'navigation' });
+    }
+  }, [autoStart]);
 
   const handleToggleListening = () => {
     if (isListening) {

@@ -279,7 +279,8 @@ export const QuizQuestion = ({
           ) : (
             <VoiceInput
               onTranscript={handleVoiceAnswer}
-              placeholder="🎤 Tap the microphone and say your answer"
+              placeholder="🎤 Listening for your answer..."
+              autoStart={true}
             />
           )}
 
