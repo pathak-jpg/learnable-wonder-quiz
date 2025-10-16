@@ -236,6 +236,10 @@ export const QuizQuestion = ({
           <div className="flex justify-center">
             <Button
               onClick={handleToggleInputMode}
+              onMouseEnter={() => {
+                const targetMode = inputMode === 'touch' ? 'voice' : 'touch';
+                speak(`Switch to ${targetMode} mode`, { rate: 0.7 });
+              }}
               variant="outline"
               className="text-lg py-3 px-6"
             >
