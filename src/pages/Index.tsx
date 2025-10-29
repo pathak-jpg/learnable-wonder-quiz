@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
-import { GraduationCap, Heart, Users, Award, Eye } from "lucide-react";
+import { GraduationCap, Heart, Users, Award, Eye, BookOpen } from "lucide-react";
 import heroIllustration from "@/assets/hero-illustration.png";
 import mascotOwl from "@/assets/mascot-owl.png";
 
@@ -12,8 +12,25 @@ const Index = () => {
     navigate("/quiz");
   };
 
+  const handleTeacherDashboard = () => {
+    navigate("/teacher");
+  };
+
   return (
     <div className="min-h-screen bg-background">
+      {/* Teacher Dashboard Link */}
+      <div className="fixed top-4 right-4 z-50">
+        <Button
+          onClick={handleTeacherDashboard}
+          variant="outline"
+          size="lg"
+          className="gap-2 shadow-lg"
+        >
+          <BookOpen className="w-5 h-5" />
+          Teacher Dashboard
+        </Button>
+      </div>
+
       {/* Hero Section */}
       <section className="relative py-20 px-4">
         <div className="container mx-auto text-center space-y-12 max-w-6xl">
